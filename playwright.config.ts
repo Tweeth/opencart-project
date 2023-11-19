@@ -1,77 +1,114 @@
-import { defineConfig, devices } from '@playwright/test';
+import type { PlaywrightTestConfig } from '@playwright/test'
+import { devices } from '@playwright/test'
+import path from 'path'
+import credsFile from '@test-data/creds.json'
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// require('dotenv').config();
+export const STORAGE_STATE = path.join(__dirname, 'test-data/storage-state.json');
+const creds = process.env.ENV === 'staging' ? credsFile.staging : credsFile.prod
 
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
-export default defineConfig({
-  testDir: './tests',
-  /* Run tests in files in parallel */
-  fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
-  use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    // baseURL: 'http://127.0.0.1:3000',
+const config: PlaywrightTestConfig = {
+  workers: 1,
+  retries: 2,
+  timeout: 60 * 1000,
+  forbidOnly: true,
+  outputDir: 'test-results/',
+  reporter: [['html', { open: 'always', outputFolder: './test-report' }]],
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+  // Ignores serial notation; consider disabling this in case of flakiness
+  fullyParallel: false,
+
+  expect: {
+    timeout: 15 * 1000,
+
+    // Allowed screenshot difference; should be supervised to prevent false positives
+    toHaveScreenshot: { maxDiffPixelRatio: 0.1 }
   },
 
-  /* Configure projects for major browsers */
+  use: {
+    actionTimeout: 15 * 1000,
+    baseURL:
+      process.env.ENV === 'staging'
+        ? 'https://playwright.dev/docs/intro'
+        : 'https://playwright.dev/docs/intro',
+    screenshot: 'only-on-failure',
+    trace: 'retain-on-failure',
+    video: 'retain-on-failure',
+
+    viewport: { height: 1600, width: 900 },
+
+    httpCredentials: {
+      username: creds.http_username,
+      password: creds.http_password
+    },
+  },
+
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: 'setup',
+      testMatch: /global-setup\.ts/,
+      teardown: 'teardown',
+    },
+    {
+      name: 'teardown',
+      testMatch: /global-teardown\.ts/,
+      use: {
+        storageState: STORAGE_STATE
+      }
+    },
+    {
+      name: 'chrome',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: STORAGE_STATE
+      },
+      dependencies: ['setup'],
     },
 
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      use: {
+        ...devices['Desktop Firefox'],
+        storageState: STORAGE_STATE
+      },
+      dependencies: ['setup'],
     },
 
     {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      name: 'safari',
+      use: {
+        ...devices['Desktop Safari'],
+        storageState: STORAGE_STATE
+      },
+      dependencies: ['setup'],
     },
 
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
+    {
+      name: 'ipad',
+      use: {
+        ...devices['iPad Pro 11'],
+        storageState: STORAGE_STATE
+      },
+      dependencies: ['setup'],
+    },
 
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
-  ],
+    {
+      name: 'android',
+      use: {
+        ...devices['Galaxy S8'],
+        storageState: STORAGE_STATE
+      },
+      dependencies: ['setup'],
+    },
 
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://127.0.0.1:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
-});
+    {
+      name: 'iphone',
+      use: {
+        ...devices['iPhone XR'],
+        storageState: STORAGE_STATE
+      },
+      dependencies: ['setup'],
+    }
+  ]
+}
+
+export default config
