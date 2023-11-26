@@ -1,0 +1,15 @@
+{
+    "staging": {
+      "http_username": "http_username",
+      "http_password": "http_password",
+      "email": "email",
+      "password": "password"
+    },  
+    "prod": {
+      "http_username": "http_username",
+      "http_password": "http_password",
+      "email": "email",
+      "password": "password"
+    }
+  }
+  

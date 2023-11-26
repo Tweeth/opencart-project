@@ -1,1 +1,7 @@
-{}
+{
+    "authentication": {
+        "sign_up": "/index.php?route=account/register",
+        "sucsess": "/index.php?route=account/success",
+        "sign_in": "/index.php?route=account/login"
+    }
+}
