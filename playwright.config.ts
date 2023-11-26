@@ -12,7 +12,7 @@ export default defineConfig({
   use: {
     baseURL: 'https://demo-opencart.com/index.php?',
     trace: 'retain-on-failure',
-    headless: false
+    headless: true
   },
   projects: [
     {
