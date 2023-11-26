@@ -2,6 +2,8 @@
     "authentication": {
         "sign_up": "/index.php?route=account/register",
         "sucsess": "/index.php?route=account/success",
-        "sign_in": "/index.php?route=account/login"
+        "sign_in": "/index.php?route=account/login",
+        "account": "/index.php?route=account/account",
+        "logout": "/index.php?route=account/logout"
     }
 }

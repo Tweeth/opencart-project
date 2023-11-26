@@ -3,8 +3,6 @@ import routes from '@test-data/routes.json'
 import text from '@test-data/text.json'
 export default class SignUpPage {
     readonly page: Page
-
-
     readonly firstNameFld: Locator
     readonly lastNameFld: Locator
     readonly emailFld: Locator
@@ -22,7 +20,6 @@ export default class SignUpPage {
     readonly passwordFldError: Locator
     readonly warningError: Locator
     readonly createdAccounLbl: Locator
-
 
     constructor(page: Page) {
         this.page = page
@@ -44,12 +41,13 @@ export default class SignUpPage {
         this.warningError = page.getByText(' Warning: You must agree to the Privacy Policy!')
         this.createdAccounLbl = page.getByText('Your Account Has Been Created!')
     }
-
-
+    
     async successSignUp(firstName: string, lastName: string,
         email: string, telephone: string,
         password: string) {
 
+        await this.page.goto(routes.authentication.sign_up)
+        await this.page.waitForLoadState()
         await this.firstNameFld.fill(firstName)
         await this.lastNameFld.fill(lastName)
         await this.emailFld.fill(email)
@@ -61,6 +59,6 @@ export default class SignUpPage {
         await this.privacyPolicyCheckbox.check()
         await expect(this.privacyPolicyCheckbox).toBeChecked()
         await this.continueBtn.click()
-        await expect(this.page).toHaveURL(/.*success/);
+        await expect(this.page).toHaveURL(routes.authentication.sucsess)
     }
 }
